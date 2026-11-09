@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>FILMBASE</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<header class="top">
+  <div class="logo">FILMBASE</div>
+  <nav>
+    <button class="link" data-go="catalog">Browse</button>
+    <button class="link" data-go="plans">Plans</button>
+    <button class="link" data-go="account" id="accountBtn">Sign in</button>
+  </nav>
+</header>
+
+<main>
+  <section id="catalog" class="view">
+    <input type="search" id="search" placeholder="Search titles, genres, years">
+    <p class="muted" id="count"></p>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <section id="title" class="view hidden">
+    <button class="link" data-go="catalog">← Back to browse</button>
+    <div id="playerBox" class="player-box"></div>
+    <h2 id="tTitle"></h2>
+    <p class="muted" id="tMeta"></p>
+    <p id="tDesc"></p>
+    <p class="muted small" id="tLicense"></p>
+    <label class="inline">Quality
+      <select id="quality"></select>
+    </label>
+    <p class="muted small" id="qNote"></p>
+  </section>
+
+  <section id="plans" class="view hidden">
+    <h2>Choose a plan</h2>
+    <p class="muted">Prices in Ugandan shillings (UGX), billed every 30 days.</p>
+    <div class="plan-grid" id="planGrid"></div>
+    <div class="card hidden" id="checkout">
+      <h3>Pay with mobile money</h3>
+      <p>Plan: <b id="coPlan"></b> · <span id="coAmount"></span></p>
+      <label>MTN or Airtel number
+        <input id="phone" placeholder="0770000000" inputmode="tel" autocomplete="tel">
+      </label>
+      <button id="payBtn" class="primary">Pay with mobile money</button>
+      <p class="status" id="payStatus"></p>
+    </div>
+  </section>
+
+  <section id="account" class="view hidden">
+    <div id="authBox" class="card narrow">
+      <div class="tabs">
+        <button id="tabLogin" class="tab active">Sign in</button>
+        <button id="tabReg" class="tab">Create account</button>
+      </div>
+      <h2 id="authTitle">Sign in</h2>
+      <label id="nameLabel" class="hidden">Full name
+        <input id="name" autocomplete="name">
+      </label>
+      <label>Email
+        <input id="email" type="email" autocomplete="email">
+      </label>
+      <label>Password
+        <input id="password" type="password" autocomplete="current-password">
+      </label>
+      <button id="authBtn" class="primary">Sign in</button>
+      <p class="status" id="authStatus"></p>
+    </div>
+
+    <div id="profileBox" class="card narrow hidden">
+      <h2 id="pName"></h2>
+      <p class="muted" id="pEmail"></p>
+      <p id="pSub"></p>
+      <button class="primary hidden" id="chooseBtn" data-go="plans">Choose a plan</button>
+      <p><a id="adminLink" class="hidden" href="/admin">Admin panel</a></p>
+      <button id="logoutBtn">Sign out</button>
+    </div>
+  </section>
+</main>
+
+<div id="toast" class="toast hidden"></div>
+<script src="/app.js"></script>
+</body>
+</html>

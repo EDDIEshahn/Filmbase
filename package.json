@@ -1,0 +1,14 @@
+{
+  "name": "filmbase",
+  "version": "1.0.0",
+  "private": true,
+  "description": "FILMBASE streaming platform: licensed catalog, UGX subscriptions, mobile money payments",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test test/app.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

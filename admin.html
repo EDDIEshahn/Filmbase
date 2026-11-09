@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FILMBASE Admin</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<header class="top">
+  <div class="logo">FILMBASE <span class="muted small">admin</span></div>
+  <nav><a href="/">Back to site</a></nav>
+</header>
+<main>
+  <div id="denied" class="card narrow hidden">
+    <p id="deniedMsg"></p>
+    <p>Sign in on the <a href="/">main site</a> with an admin account, then reload this page.</p>
+  </div>
+
+  <div id="panel" class="hidden">
+    <section class="card">
+      <h2>Add a title</h2>
+      <p class="muted small">Only add titles you own or hold a written license to stream. Media files go in the server's media folder; enter their file names here.</p>
+      <div class="form-grid">
+        <label>Title<input id="t_title"></label>
+        <label>Year<input id="t_year" type="number"></label>
+        <label>Genre<input id="t_genre"></label>
+        <label>Poster color<input id="t_color" type="color" value="#7b2d26"></label>
+      </div>
+      <label>Description<textarea id="t_desc" rows="3"></textarea></label>
+      <label>License / rights note (required to publish)<input id="t_license" placeholder="e.g. Licensed from X, valid to 2028"></label>
+      <div class="form-grid">
+        <label>480p file<input id="s_480" placeholder="film-480.mp4"></label>
+        <label>720p file<input id="s_720" placeholder="film-720.mp4"></label>
+        <label>1080p file<input id="s_1080" placeholder="film-1080.mp4"></label>
+      </div>
+      <label class="check"><input type="checkbox" id="t_pub"> Publish now</label>
+      <button class="primary" id="addBtn">Save title</button>
+      <p class="status" id="adminStatus"></p>
+    </section>
+
+    <section class="card">
+      <h2>All titles</h2>
+      <div style="overflow-x:auto"><table id="list"></table></div>
+    </section>
+  </div>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+async function api(path, options = {}) {
+  const res = await fetch(path, {
+    method: options.method || (options.body ? 'POST' : 'GET'),
+    credentials: 'same-origin',
+    headers: options.body ? { 'Content-Type': 'application/json' } : {},
+    body: options.body ? JSON.stringify(options.body) : undefined
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'Request failed');
+  return data;
+}
+
+async function load() {
+  try {
+    const { titles } = await api('/api/admin/titles');
+    $('denied').classList.add('hidden');
+    $('panel').classList.remove('hidden');
+    renderList(titles);
+  } catch (e) {
+    $('panel').classList.add('hidden');
+    $('denied').classList.remove('hidden');
+    $('deniedMsg').textContent = e.message + '.';
+  }
+}
+
+function renderList(titles) {
+  const rows = titles.map(t => `
+    <tr>
+      <td>${esc(t.title)}</td>
+      <td>${esc(t.year)}</td>
+      <td>${Object.keys(t.sources).join(', ') || '—'}</td>
+      <td>${t.published ? 'Published' : 'Draft'}</td>
+      <td><button data-id="${esc(t.id)}" data-pub="${t.published}" class="toggle">${t.published ? 'Unpublish' : 'Publish'}</button></td>
+    </tr>`).join('');
+  $('list').innerHTML = '<tr><th>Title</th><th>Year</th><th>Qualities</th><th>Status</th><th></th></tr>' + rows;
+}
+
+$('addBtn').onclick = async () => {
+  const sources = {};
+  for (const q of [480, 720, 1080]) {
+    const v = $('s_' + q).value.trim();
+    if (v) sources[q] = v;
+  }
+  try {
+    await api('/api/admin/titles', {
+      body: {
+        title: $('t_title').value,
+        year: $('t_year').value,
+        genre: $('t_genre').value,
+        color: $('t_color').value,
+        desc: $('t_desc').value,
+        license: $('t_license').value,
+        published: $('t_pub').checked,
+        sources
+      }
+    });
+    $('adminStatus').className = 'status ok';
+    $('adminStatus').textContent = 'Saved.';
+    load();
+  } catch (e) {
+    $('adminStatus').className = 'status err';
+    $('adminStatus').textContent = e.message;
+  }
+};
+
+document.addEventListener('click', async e => {
+  const btn = e.target.closest('button.toggle');
+  if (!btn) return;
+  const publish = btn.dataset.pub !== 'true';
+  try {
+    await api('/api/admin/titles/' + encodeURIComponent(btn.dataset.id), {
+      method: 'PATCH',
+      body: { published: publish }
+    });
+    load();
+  } catch (err) {
+    alert(err.message);
+  }
+});
+
+load();
+</script>
+</body>
+</html>
